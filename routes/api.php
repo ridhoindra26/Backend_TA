@@ -24,4 +24,14 @@ Route::controller(CustomerController::class)->group(function () {
     Route::get('/customer', 'index');
     Route::get('/customer/{id}', 'show');
     Route::post('/customer', 'store');
+    Route::post('/login', 'login');
+    Route::post('/customer/{id}', 'update');
+    Route::delete('/customer/{id}', 'destroy');
+
+    Route::post('/forgot-password', 'forgotPassword');
+    Route::post('/verify-otp', 'verifyOtp');
+    Route::post('/reset-password', 'resetPassword');
+
+    Route::get('/checkAuth', 'checkAuth')->middleware('auth:api');
+    Route::get( '/unauthenticated', 'unauthenticated')->name('login');
 });
