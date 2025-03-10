@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
+
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 
@@ -13,7 +15,63 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            $products = Product::all();
+            return response()->json([
+                'message' => 'List of all products',
+                'data' => $products
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display a list of featured products for the home page.
+     */
+
+    public function home()
+    {
+        try {
+            // Ambil 5 produk dengan transaksi terbanyak
+            $topProducts = Product::withCount('detailTransactions')
+                            ->orderBy('detail_transactions_count', 'desc')
+                            ->take(5)
+                            ->get();
+                                    
+            return response()->json([
+                'message' => 'Top 5 products based on the most transactions',
+                'data' => $topProducts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display a listing of products by category.
+     */
+    public function categoryList()
+    {
+        try {
+            $categories = Category::all();
+            
+            return response()->json([
+                'message' => 'List of category',
+                'data' => $categories
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -21,7 +79,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        // return response()->json('$data', 200);
     }
 
     /**
@@ -33,11 +91,23 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified product.
      */
-    public function show(Product $product)
+    public function show(string $id)
     {
-        //
+        try {
+            $product = Product::findOrFail($id);
+
+            return response()->json([
+                'message' => 'Product details',
+                'product' => $product
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

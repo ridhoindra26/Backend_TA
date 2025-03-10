@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,4 +35,15 @@ Route::controller(CustomerController::class)->group(function () {
 
     Route::get('/checkAuth', 'checkAuth')->middleware('auth:api');
     Route::get( '/unauthenticated', 'unauthenticated')->name('login');
+});
+
+Route::controller(ProductController::class)->group(function () {
+    Route::get('/product', 'index');
+    Route::get('/product/home', 'home');
+    Route::get('/product/category', 'categoryList');
+    Route::get('/product/{id}', 'show');
+});
+
+Route::get('/test', function () {
+    return 'test';
 });
