@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\WishlistController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,13 @@ Route::controller(ProductController::class)->group(function () {
     Route::get('/product/home', 'home');
     Route::get('/product/category', 'categoryList');
     Route::get('/product/{id}', 'show');
+});
+
+Route::controller(WishlistController::class)->group(function () {
+    Route::get('/wishlist', 'index');
+    Route::get('/wishlist/{id}', 'show');
+    Route::post('/wishlist', 'store')->middleware('auth:api');
+    Route::delete('/wishlist/{id}', 'destroy')->middleware('auth:api');
 });
 
 Route::get('/test', function () {
