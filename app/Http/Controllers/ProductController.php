@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Wishlist;
 use App\Models\Category;
 
 use App\Http\Requests\StoreProductRequest;
@@ -96,8 +97,16 @@ class ProductController extends Controller
     public function show(string $id)
     {
         try {
-            $product = Product::findOrFail($id);
+            $user_id = auth()->id();
 
+            $product = Product::findOrFail($id);
+            $wishlistCount = Wishlist::where('product_id', $id)->count();
+            $hasWishlist = Wishlist::where('customer_id', $user_id)
+                                    ->where('product_id', $id)
+                                    ->exists();
+            
+            $product->likes = $wishlistCount;
+            $product->hasWishlist = $hasWishlist;
             return response()->json([
                 'message' => 'Product details',
                 'product' => $product
