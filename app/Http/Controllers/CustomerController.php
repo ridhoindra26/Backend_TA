@@ -208,12 +208,18 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $customers = Customer::all();
-        return response()->json([
-            'success' => true,
-            'message' => 'List of all customers',
-            'data' => $customers
-        ]);
+        try {
+            $customers = Customer::all();
+            return response()->json([
+                'message' => 'List of all customers',
+                'data' => $customers
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -261,12 +267,19 @@ class CustomerController extends Controller
      */
     public function show(string $id)
     {
-        $customer = Customer::findOrFail($id);
-        
-        return response()->json([
-            'message' => 'Customer details',
-            'customer' => $customer
-        ]);
+        try {
+            $customer = Customer::findOrFail($id);
+            
+            return response()->json([
+                'message' => 'Customer details',
+                'customer' => $customer
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

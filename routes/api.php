@@ -4,6 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\StationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,4 +38,33 @@ Route::controller(CustomerController::class)->group(function () {
 
     Route::get('/checkAuth', 'checkAuth')->middleware('auth:api');
     Route::get( '/unauthenticated', 'unauthenticated')->name('login');
+});
+
+Route::controller(ProductController::class)->group(function () {
+    Route::get('/product', 'index');
+    Route::get('/product/home', 'home');
+    Route::get('/product/category', 'categoryList');
+    Route::get('/product/{id}', 'show');
+});
+
+Route::controller(WishlistController::class)->group(function () {
+    Route::get('/wishlist', 'index');
+    Route::get('/wishlist/customer', 'show')->middleware('auth:api');
+    Route::post('/wishlist', 'store')->middleware('auth:api');
+    Route::delete('/wishlist/{id}', 'destroy')->middleware('auth:api');
+});
+
+Route::controller(TransactionController::class)->group(function () {
+    Route::get('/order', 'index')->middleware('auth:api');
+    Route::get('/order/{id}', 'show')->middleware('auth:api');
+    Route::post('/order', 'store')->middleware('auth:api');
+});
+
+Route::controller(StationController::class)->group(function () {
+    Route::get('/station', 'index');
+    // Route::post('/orders', 'store');
+});
+
+Route::get('/test', function () {
+    return 'test';
 });

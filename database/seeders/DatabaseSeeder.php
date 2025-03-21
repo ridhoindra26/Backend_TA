@@ -28,8 +28,9 @@ class DatabaseSeeder extends Seeder
             // AdminSeeder::class,
             // StationSeeder::class,
             // DroneSeeder::class,
-            TransactionSeeder::class,
-            DetailTransactionSeeder::class,
+            // TransactionSeeder::class,
+            // DetailTransactionSeeder::class,
+            WishlistSeeder::class
         ]);
     }
 }
