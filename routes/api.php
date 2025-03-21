@@ -44,7 +44,7 @@ Route::controller(ProductController::class)->group(function () {
     Route::get('/product', 'index');
     Route::get('/product/home', 'home');
     Route::get('/product/category', 'categoryList');
-    Route::get('/product/{id}', 'show');
+    Route::get('/product/{id}', 'show')->middleware('auth:api');
 });
 
 Route::controller(WishlistController::class)->group(function () {
