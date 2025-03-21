@@ -13,7 +13,11 @@ class StationController extends Controller
      */
     public function index()
     {
-        //
+        $stations = Station::all();
+        return response()->json([
+            'message' => 'List of all Stations',
+            'data' => $stations
+        ]);
     }
 
     /**

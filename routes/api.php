@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\StationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,9 +49,20 @@ Route::controller(ProductController::class)->group(function () {
 
 Route::controller(WishlistController::class)->group(function () {
     Route::get('/wishlist', 'index');
-    Route::get('/wishlist/{id}', 'show');
+    Route::get('/wishlist/customer', 'show')->middleware('auth:api');
     Route::post('/wishlist', 'store')->middleware('auth:api');
     Route::delete('/wishlist/{id}', 'destroy')->middleware('auth:api');
+});
+
+Route::controller(TransactionController::class)->group(function () {
+    Route::get('/order', 'index')->middleware('auth:api');
+    Route::get('/order/{id}', 'show')->middleware('auth:api');
+    Route::post('/order', 'store')->middleware('auth:api');
+});
+
+Route::controller(StationController::class)->group(function () {
+    Route::get('/station', 'index');
+    // Route::post('/orders', 'store');
 });
 
 Route::get('/test', function () {

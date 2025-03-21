@@ -13,7 +13,19 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            $id = auth()->id();
+            $transactions = Transaction::where('customer_id', $id)->get();
+            return response()->json([
+                'message' => 'List of all Transaction',
+                'data' => $transactions
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -35,9 +47,21 @@ class TransactionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Transaction $transaction)
+    public function show(string $id)
     {
-        //
+        try {
+            $authId = auth()->id();
+            $transaction = Transaction::where('customer_id', $authId)->findOrFail($id);
+            return response()->json([
+                'message' => 'Transaction details',
+                'data' => $transaction
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

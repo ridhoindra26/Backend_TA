@@ -63,13 +63,30 @@ class WishlistController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show()
     {
         try {
-            $wishlist = Wishlist::where('customer_id', $id)->get();
+            $id = auth()->id();
+            $wishlist = Wishlist::with('product')->where('customer_id', $id)->get();
+
+            $products = $wishlist->map(function ($item) {
+                if ($item->product) {
+                    return [
+                        'id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'category_id' => $item->product->category_id,
+                        'description' => $item->product->description,
+                        'photo' => url('storage/' . $item->product->photo),
+                        'price' => $item->product->price,
+                        'created_at' => $item->product->created_at,
+                        'updated_at' => $item->product->updated_at
+                    ];
+                }
+            })->filter();
+
             return response()->json([
                 'message' => 'Wishlist Customer List',
-                'wishlist' => $wishlist
+                'wishlist' => $products
             ]);
         } catch (\Exception $e) {
             return response()->json([
