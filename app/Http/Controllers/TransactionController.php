@@ -156,11 +156,11 @@ class TransactionController extends Controller
 
         // Validasi payload
         $validator = Validator::make($request->all(), [
-            'id' => 'required|string',
-            'external_id' => 'required|string',
+            'qr_code.id' => 'required|string',
+            'qr_code.external_id' => 'required|string',
             'amount' => 'required|numeric',
             'status' => 'required|string',
-            'payment_method' => 'nullable|string',
+            'payment_details.source' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
