@@ -59,7 +59,8 @@ class TransactionController extends Controller
                 'payment_method' => $request->payment_method,
                 'total_price' => $request->total_price,
                 'xendit_id' => null,
-                'reference_id' => $reference_id
+                'reference_id' => $reference_id,
+                'qr_string' => null
             ]);
             
             $response = Http::withBasicAuth('xnd_production_g6FoUeY8qm7w3vGTp4YBwfw4UmakiliS43uwt2tt4Gub9Yg8jqLyU3OrYONe5', '')
@@ -85,7 +86,8 @@ class TransactionController extends Controller
             $xenditData = $response->json();
 
             $transaction->update([
-                'xendit_id' => $xenditData['id']
+                'xendit_id' => $xenditData['id'],
+                'qr_string' => $xenditData['qr_string']
             ]);
 
             foreach ($request->products as $prod) {
