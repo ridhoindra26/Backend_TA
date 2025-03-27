@@ -58,6 +58,7 @@ Route::controller(TransactionController::class)->group(function () {
     Route::get('/order', 'index')->middleware('auth:api');
     Route::get('/order/{id}', 'show')->middleware('auth:api');
     Route::post('/order', 'store')->middleware('auth:api');
+    Route::post('/order/webhook', 'webhook');
 });
 
 Route::controller(StationController::class)->group(function () {
