@@ -41,7 +41,34 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
-        //
+        // $validatedData = $request->validated();
+        try {
+            $transaction = Transaction::create([
+                'customer_id' => auth()->id(),
+                'station_id' => $request->station_id,
+                'status' => 'Pending',
+                'payment_method' => $request->payment_method,
+                'total_price' => $request->total_price,
+            ]);
+
+            $data = $request->products;
+            foreach($data as $prod) {
+                $transaction->detailTransactions()->create([
+                    'product_id' => $prod['id'],
+                    'quantity' => $prod['quantity'],
+                    'price' => $prod['price'],
+                ]);
+            }
+            return response()->json([
+                'message' => 'Order has been created',
+                'data' => $transaction
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

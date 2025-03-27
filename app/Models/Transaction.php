@@ -33,6 +33,11 @@ class Transaction extends Model
         return $this->belongsTo(Drone::class);
     }
 
+    public function station()
+    {
+        return $this->belongsTo(Station::class);
+    }
+
     public function detailTransactions()
     {
         return $this->hasMany(DetailTransaction::class);
