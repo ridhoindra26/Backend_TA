@@ -168,7 +168,7 @@ class TransactionController extends Controller
         }
 
         // Cek apakah transaksi dengan external_id sudah ada
-        $transaction = Transaction::where('id', $request->external_id)->first();
+        $transaction = Transaction::where('id', $request->qr_code->external_id)->first();
 
         if (!$transaction) {
             return response()->json(['message' => 'Transaction not found'], 404);
@@ -176,7 +176,7 @@ class TransactionController extends Controller
 
         // Update transaksi
         $transaction->update([
-            'xendit_id' => $request->id,
+            'xendit_id' => $request->qr_code->id,
             'status' => $request->status,
         ]);
 
