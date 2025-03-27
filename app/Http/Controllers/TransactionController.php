@@ -155,29 +155,24 @@ class TransactionController extends Controller
         }
 
         // Validasi payload
-        $validator = Validator::make($request->all(), [
-            'qr_code.id' => 'required|string',
-            'qr_code.external_id' => 'required|string',
-            'amount' => 'required|numeric',
-            'status' => 'required|string',
-            'payment_details.source' => 'nullable|string',
-        ]);
+        $data = $request->all();
 
-        if ($validator->fails()) {
-            return response()->json(['message' => 'Invalid payload', 'errors' => $validator->errors()], 400);
+        if (!isset($data['qr_code']['external_id']) || !isset($data['status'])) {
+            return response()->json(['message' => 'Invalid payload'], 400);
         }
 
         // Cek apakah transaksi dengan external_id sudah ada
-        $transaction = Transaction::where('id', $request->qr_code->external_id)->first();
+        $transaction = Transaction::where('id', $data['qr_code']['external_id'])->first();
 
         if (!$transaction) {
+            Log::error('Transaction not found for external_id: ' . $data['qr_code']['external_id']);
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
         // Update transaksi
         $transaction->update([
-            'xendit_id' => $request->qr_code->id,
-            'status' => $request->status,
+            'status' => $data['status'],
+            'qr_string' => $data['qr_code']['qr_string'],
         ]);
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
