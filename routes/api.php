@@ -57,8 +57,10 @@ Route::controller(WishlistController::class)->group(function () {
 Route::controller(TransactionController::class)->group(function () {
     Route::get('/order', 'index')->middleware('auth:api');
     Route::get('/order/{id}', 'show')->middleware('auth:api');
+    Route::get('/order/confirm/{id}', 'confirm')->middleware('auth:api');
     Route::post('/order', 'store')->middleware('auth:api');
     Route::post('/order/webhook', 'webhook');
+    Route::post('/order/expire/{id}', 'expire')->middleware('auth:api');
 });
 
 Route::controller(StationController::class)->group(function () {

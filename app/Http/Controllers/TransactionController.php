@@ -171,7 +171,7 @@ class TransactionController extends Controller
 
         // Update transaksi
         $transaction->update([
-            'status' => $data['status'],
+            'status' => 'Confirmed',
             'qr_string' => $data['qr_code']['qr_string'],
         ]);
 
@@ -179,18 +179,48 @@ class TransactionController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Expire the specified resource in storage.
      */
-    public function update(UpdateTransactionRequest $request, Transaction $transaction)
+    public function expire(string $id)
     {
-        //
+        try {
+            $authId = auth()->id();
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->customer_id !== $authId) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $transaction->update(['status' => 'Expired']);
+            return response()->json(['message' => 'Transaction expired'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Check and confirm the specified order.
      */
-    public function destroy(Transaction $transaction)
+    public function confirm(string $id)
     {
-        //
+        try {
+            $authId = auth()->id();
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->customer_id !== $authId) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            if ($transaction->status !== 'Confirmed') {
+                return response()->json(['message' => 'Your order is '.$transaction->status], 400);
+            }
+
+            return response()->json(['message' => 'Order confirmed successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
