@@ -124,7 +124,7 @@ class TransactionController extends Controller
         try {
             $authId = auth()->id();
             $transaction = Transaction::where('customer_id', $authId)
-                ->with('detailTransactions.product')
+                ->with(['detailTransactions.product', 'station'])
                 ->findOrFail($id);
             return response()->json([
                 'message' => 'Transaction details',
