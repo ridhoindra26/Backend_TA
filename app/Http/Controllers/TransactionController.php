@@ -19,9 +19,33 @@ class TransactionController extends Controller
     {
         try {
             $id = auth()->id();
-            $transactions = Transaction::where('customer_id', $id)->get();
+
+            $transactions = Transaction::with(['detailTransactions.product'])
+                ->where('customer_id', $id)
+                ->get();
+
+            $transactions->transform(function ($transaction) {
+                $firstDetail = $transaction->detailTransactions->first();
+                $firstProduct = $firstDetail ? $firstDetail->product : null;
+
+                $otherProducts = $transaction->detailTransactions->skip(1)->filter(function ($item) use ($firstProduct) {
+                    return $firstProduct && $item->product_id !== $firstProduct->id;
+                })->values(); // reset keys
+
+                return [
+                    'id' => $transaction->id,
+                    'customer_id' => $transaction->customer_id,
+                    'qr_string' => $transaction->qr_string,
+                    'status' => $transaction->status,
+                    'created_at' => $transaction->created_at,
+                    'updated_at' => $transaction->updated_at,
+                    'first_product' => $firstProduct,
+                    'other_products' => $otherProducts,
+                ];
+            });
+
             return response()->json([
-                'message' => 'List of all Transaction',
+                'message' => 'List of all Transactions',
                 'data' => $transactions
             ]);
         } catch (\Exception $e) {
