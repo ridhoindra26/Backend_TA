@@ -28,9 +28,10 @@ class TransactionController extends Controller
                 $firstDetail = $transaction->detailTransactions->first();
                 $firstProduct = $firstDetail ? $firstDetail->product : null;
 
-                $otherProducts = $transaction->detailTransactions->skip(1)->filter(function ($item) use ($firstProduct) {
-                    return $firstProduct && $item->product_id !== $firstProduct->id;
-                })->values(); // reset keys
+                // Hitung total produk lain (selain yang pertama)
+                $otherCount = $transaction->detailTransactions->count() > 1
+                    ? $transaction->detailTransactions->count() - 1
+                    : null;
 
                 return [
                     'id' => $transaction->id,
@@ -40,7 +41,7 @@ class TransactionController extends Controller
                     'created_at' => $transaction->created_at,
                     'updated_at' => $transaction->updated_at,
                     'first_product' => $firstProduct,
-                    'other_products' => $otherProducts,
+                    'other_products' => $otherCount,
                 ];
             });
 
