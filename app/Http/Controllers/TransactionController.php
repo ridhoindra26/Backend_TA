@@ -35,6 +35,7 @@ class TransactionController extends Controller
 
                 return [
                     'id' => $transaction->id,
+                    'total_price' => $transaction->total_price,
                     'customer_id' => $transaction->customer_id,
                     'qr_string' => $transaction->qr_string,
                     'status' => $transaction->status,
