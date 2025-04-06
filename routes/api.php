@@ -62,6 +62,7 @@ Route::controller(TransactionController::class)->group(function () {
     Route::post('/order/webhook', 'webhook');
     Route::post('/order/expire/{id}', 'expire')->middleware('auth:api');
     Route::get('/order/reorder/{id}', 'reorder')->middleware('auth:api');
+    Route::post('/order/cancel/{id}', 'cancel')->middleware('auth:api');
 });
 
 Route::controller(StationController::class)->group(function () {

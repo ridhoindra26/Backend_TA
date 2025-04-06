@@ -291,4 +291,30 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    
+    /**
+     * Cancel the specified order.
+     */
+    public function cancel(string $id)
+    {
+        try {
+            $authId = auth()->id();
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->customer_id !== $authId) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            if ($transaction->status !== 'Pending') {
+                return response()->json(['message' => 'You can\'t cancel the order as it is '.$transaction->status], 400);
+            }
+
+            $transaction->update(['status' => 'Canceled']);
+            return response()->json(['message' => 'Order Canceled successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
