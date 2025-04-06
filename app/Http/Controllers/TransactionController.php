@@ -22,6 +22,7 @@ class TransactionController extends Controller
 
             $transactions = Transaction::with(['detailTransactions.product'])
                 ->where('customer_id', $id)
+                ->orderByDesc('id')
                 ->get();
 
             $transactions->transform(function ($transaction) {
@@ -61,9 +62,50 @@ class TransactionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function reorder(string $id)
     {
-        //
+        try {
+            $transaction = Transaction::with(['detailTransactions.product', 'station'])
+                ->findOrFail($id);
+
+            $detailTransactions = $transaction->detailTransactions;
+            if ($detailTransactions->isEmpty()) {
+                return response()->json([
+                    'message' => 'No product in transaction',
+                ], 204);
+            }
+            $cartItems = $detailTransactions->map(function ($detailTransaction) {
+                $product = $detailTransaction->product;
+                $price = $product->price;
+                $quantity = $detailTransaction->quantity;
+
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $price,
+                    'quantity' => $quantity,
+                    'selectedOptions' => []
+                ];
+            });
+
+            $totalItems = $cartItems->sum('quantity');
+            $totalPrice = $cartItems->sum(function ($item) {
+                return $item['price'] * $item['quantity'];
+            });
+
+            return response()->json([
+                'message' => 'Reorder product',
+                'data' => $cartItems,
+                'totalItems' => $totalItems,
+                'totalPrice' => $totalPrice,
+                'station' => $transaction->station
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
