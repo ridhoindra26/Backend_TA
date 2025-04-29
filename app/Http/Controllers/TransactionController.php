@@ -20,7 +20,7 @@ class TransactionController extends Controller
         try {
             $id = auth()->id();
 
-            $transactions = Transaction::with(['detailTransactions.product'])
+            $transactions = Transaction::with(['status', 'detailTransactions.product'])
                 ->where('customer_id', $id)
                 ->orderByDesc('id')
                 ->get();
@@ -34,12 +34,14 @@ class TransactionController extends Controller
                     ? $transaction->detailTransactions->count() - 1
                     : null;
 
+                $status = $transaction->status ? $transaction->status['name'] : null;
+
                 return [
                     'id' => $transaction->id,
                     'total_price' => $transaction->total_price,
                     'customer_id' => $transaction->customer_id,
                     'qr_string' => $transaction->qr_string,
-                    'status' => $transaction->status,
+                    'status' => $status,
                     'created_at' => $transaction->created_at,
                     'updated_at' => $transaction->updated_at,
                     'first_product' => $firstProduct,
@@ -72,13 +74,19 @@ class TransactionController extends Controller
             if ($detailTransactions->isEmpty()) {
                 return response()->json([
                     'message' => 'No product in transaction',
-                ], 204);
+                ], 404);
             }
+
             $cartItems = $detailTransactions->map(function ($detailTransaction) {
                 $product = $detailTransaction->product;
+    
+                if ($product->status != "1") {
+                    return null; // Abaikan produk tidak aktif
+                }
+    
                 $price = $product->price;
                 $quantity = $detailTransaction->quantity;
-
+    
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -86,7 +94,13 @@ class TransactionController extends Controller
                     'quantity' => $quantity,
                     'selectedOptions' => []
                 ];
-            });
+            })->filter(); // Buang item null
+
+            if ($cartItems->isEmpty()) {
+                return response()->json([
+                    'message' => 'No active products available for reorder',
+                ], 404); // atau 404 kalau mau
+            }
 
             $totalItems = $cartItems->sum('quantity');
             $totalPrice = $cartItems->sum(function ($item) {
@@ -123,7 +137,7 @@ class TransactionController extends Controller
             $transaction = Transaction::create([
                 'customer_id' => auth()->id(),
                 'station_id' => $request->station_id,
-                'status' => 'Pending',
+                'status_id' => 1,
                 'payment_method' => $request->payment_method,
                 'total_price' => $request->total_price,
                 'xendit_id' => null,
@@ -159,12 +173,28 @@ class TransactionController extends Controller
             ]);
 
             foreach ($request->products as $prod) {
-                $transaction->detailTransactions()->create([
+                $detailTransaction = $transaction->detailTransactions()->create([
                     'product_id' => $prod['id'],
                     'quantity' => $prod['quantity'],
                     'price' => $prod['price'],
                 ]);
+
+                if (!empty($prod['variants']) && is_array($prod['variants'])) {
+                    foreach ($prod['variants'] as $variant) {
+                        $detailTransaction->variants()->create([
+                            'detail_transaction_id' => $detailTransaction->id,
+                            'variant_category' => $variant['variant_category'],
+                            'variant_name' => $variant['variant_name'],
+                            'price' => $variant['price'],
+                        ]);
+                    }
+                }
             }
+
+            $transaction->orderLogs()->create([
+                'transaction_id' => $transaction->id,
+                'status_id' => $transaction->status_id
+            ]);
 
             return response()->json([
                 'message' => 'Transaction created successfully',
@@ -192,7 +222,7 @@ class TransactionController extends Controller
         try {
             $authId = auth()->id();
             $transaction = Transaction::where('customer_id', $authId)
-                ->with(['detailTransactions.product', 'station'])
+                ->with(['status', 'detailTransactions.product', 'detailTransactions.variants', 'orderLogs', 'drone','station'])
                 ->findOrFail($id);
             return response()->json([
                 'message' => 'Transaction details',
@@ -239,7 +269,7 @@ class TransactionController extends Controller
 
         // Update transaksi
         $transaction->update([
-            'status' => 'Confirmed',
+            'status_id' => 2,
             'qr_string' => $data['qr_code']['qr_string'],
         ]);
 
@@ -258,7 +288,7 @@ class TransactionController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            $transaction->update(['status' => 'Expired']);
+            $transaction->update(['status_id' => 4]);
             return response()->json(['message' => 'Transaction expired'], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -279,8 +309,8 @@ class TransactionController extends Controller
             if ($transaction->customer_id !== $authId) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
-            if ($transaction->status !== 'Confirmed') {
-                return response()->json(['message' => 'Your order is '.$transaction->status], 400);
+            if ($transaction->status_id !== 2) {
+                return response()->json(['message' => 'Your order is '.$transaction->status_id], 400);
             }
 
             return response()->json(['message' => 'Order confirmed successfully'], 200);
@@ -304,12 +334,12 @@ class TransactionController extends Controller
             if ($transaction->customer_id !== $authId) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
-            if ($transaction->status !== 'Pending') {
-                return response()->json(['message' => 'You can\'t cancel the order as it is '.$transaction->status], 400);
+            if ($transaction->status_id !== 1) {
+                return response()->json(['message' => 'You can\'t cancel the order as it is '.$transaction->status_id], 400);
             }
 
-            $transaction->update(['status' => 'Canceled']);
-            return response()->json(['message' => 'Order Canceled successfully'], 200);
+            $transaction->update(['status_id' => 10]);
+            return response()->json(['message' => 'Order Cancelled successfully'], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Something went wrong',

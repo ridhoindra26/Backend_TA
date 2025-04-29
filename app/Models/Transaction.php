@@ -10,12 +10,17 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id', 'status', 'xendit_id', 'total_price', 'payment_method', 'admin_id', 'operator_id', 'drone_id', 'station_id', 'reference_id', 'qr_string'
+        'customer_id', 'status_id', 'xendit_id', 'total_price', 'payment_method', 'admin_id', 'operator_id', 'drone_id', 'station_id', 'reference_id', 'qr_string'
     ];
 
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Statuses::class);
     }
 
     public function admin()
@@ -41,5 +46,10 @@ class Transaction extends Model
     public function detailTransactions()
     {
         return $this->hasMany(DetailTransaction::class);
+    }
+
+    public function orderLogs()
+    {
+        return $this->hasMany(OrderLogs::class);
     }
 }
