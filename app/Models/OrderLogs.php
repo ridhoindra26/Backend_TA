@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class DetailTransaction extends Model
+class OrderLogs extends Model
 {
     use HasFactory;
 
+    protected $table = 'delivery_logs';
+
     protected $fillable = [
-        'transaction_id', 'product_id', 'quantity', 'price',
+        'transaction_id', 'status_id',
     ];
 
     public function transaction()
@@ -18,13 +20,9 @@ class DetailTransaction extends Model
         return $this->belongsTo(Transaction::class);
     }
 
-    public function variants()
+    public function status()
     {
-        return $this->hasMany(DetailTransactionVariant::class);
+        return $this->belongsTo(Statuses::class);
     }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
 }

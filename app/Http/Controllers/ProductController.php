@@ -17,7 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         try {
-            $products = Product::all();
+            $products = Product::where('status',1)->get();
             return response()->json([
                 'message' => 'List of all products',
                 'data' => $products
@@ -37,8 +37,8 @@ class ProductController extends Controller
     public function home()
     {
         try {
-            // Ambil 5 produk dengan transaksi terbanyak
             $topProducts = Product::withCount('detailTransactions')
+                            ->where('status',1)
                             ->orderBy('detail_transactions_count', 'desc')
                             ->take(5)
                             ->get();
@@ -99,17 +99,49 @@ class ProductController extends Controller
         try {
             $user_id = auth()->id();
 
-            $product = Product::findOrFail($id);
+            $product = Product::with('variants.variantCategory.variants')->findOrFail($id);
             $wishlistCount = Wishlist::where('product_id', $id)->count();
             $hasWishlist = Wishlist::where('customer_id', $user_id)
                                     ->where('product_id', $id)
                                     ->exists();
             
-            $product->likes = $wishlistCount;
-            $product->hasWishlist = $hasWishlist;
+            // Kita kumpulkan semua variant_category yang unik
+            $variantCategories = $product->variants->map(function ($variant) {
+                $category = $variant->variantCategory;
+    
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'min_selection' => $category->min_selection,
+                    'max_selection' => $category->max_selection,
+                    'variants' => collect($category->variants)->map(function ($v) {
+                        return [
+                            'id' => $v->id,
+                            'name' => $v->name,
+                            'price' => $v->price,
+                        ];
+                    })->toArray()
+                ];
+            })->unique('id')->values();
+
+            $productData = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'category_id' => $product->category_id,
+                'description' => $product->description,
+                'photo' => $product->photo,
+                'price' => $product->price,
+                'status' => $product->status,
+                'created_at' => $product->created_at,
+                'updated_at' => $product->updated_at,
+                'variants' => $variantCategories,
+                'likes' => $wishlistCount,
+                'hasWishlist' => $hasWishlist,
+            ];
+
             return response()->json([
                 'message' => 'Product details',
-                'product' => $product
+                'product' => $productData
             ]);
         } catch (\Exception $e) {
             return response()->json([
