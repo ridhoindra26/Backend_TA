@@ -76,7 +76,7 @@ class WishlistController extends Controller
                         'name' => $item->product->name,
                         'category_id' => $item->product->category_id,
                         'description' => $item->product->description,
-                        'photo' => url('storage/' . $item->product->photo),
+                        'photo' => env('IMG_URL') . $item->product->photo,
                         'price' => $item->product->price,
                         'created_at' => $item->product->created_at,
                         'updated_at' => $item->product->updated_at
