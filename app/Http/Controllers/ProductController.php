@@ -17,7 +17,11 @@ class ProductController extends Controller
     public function index()
     {
         try {
-            $products = Product::where('status',1)->get();
+            $products = Product::where('status',1)->get()
+                            ->map(function ($product) {
+                                $product->photo = env('IMG_URL') . $product->photo;
+                                return $product;
+                            });
             return response()->json([
                 'message' => 'List of all products',
                 'data' => $products
@@ -41,7 +45,11 @@ class ProductController extends Controller
                             ->where('status',1)
                             ->orderBy('detail_transactions_count', 'desc')
                             ->take(5)
-                            ->get();
+                            ->get()
+                            ->map(function ($product) {
+                                $product->photo = env('IMG_URL') . $product->photo;
+                                return $product;
+                            });
                                     
             return response()->json([
                 'message' => 'Top 5 products based on the most transactions',
@@ -129,7 +137,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'category_id' => $product->category_id,
                 'description' => $product->description,
-                'photo' => $product->photo,
+                'photo' => env('IMG_URL') . $product->photo,
                 'price' => $product->price,
                 'status' => $product->status,
                 'created_at' => $product->created_at,
