@@ -273,6 +273,11 @@ class TransactionController extends Controller
             'qr_string' => $data['qr_code']['qr_string'],
         ]);
 
+        $transaction->orderLogs()->create([
+            'transaction_id' => $transaction->id,
+            'status_id' => $transaction->status_id
+        ]);
+
         return response()->json(['message' => 'Webhook processed successfully'], 200);
     }
 
@@ -289,6 +294,11 @@ class TransactionController extends Controller
             }
 
             $transaction->update(['status_id' => 4]);
+
+            $transaction->orderLogs()->create([
+                'transaction_id' => $transaction->id,
+                'status_id' => $transaction->status_id
+            ]);
             return response()->json(['message' => 'Transaction expired'], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -339,6 +349,12 @@ class TransactionController extends Controller
             }
 
             $transaction->update(['status_id' => 10]);
+
+            $transaction->orderLogs()->create([
+                'transaction_id' => $transaction->id,
+                'status_id' => $transaction->status_id
+            ]);
+            
             return response()->json(['message' => 'Order Cancelled successfully'], 200);
         } catch (\Exception $e) {
             return response()->json([
