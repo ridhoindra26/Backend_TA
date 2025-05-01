@@ -12,7 +12,7 @@ class OrderLogs extends Model
     protected $table = 'delivery_logs';
 
     protected $fillable = [
-        'transaction_id', 'status_id',
+        'transaction_id', 'status_id','notes'
     ];
 
     public function transaction()

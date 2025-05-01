@@ -193,7 +193,8 @@ class TransactionController extends Controller
 
             $transaction->orderLogs()->create([
                 'transaction_id' => $transaction->id,
-                'status_id' => $transaction->status_id
+                'status_id' => $transaction->status_id,
+                'notes' => $transaction->status->description,
             ]);
 
             return response()->json([
@@ -275,7 +276,8 @@ class TransactionController extends Controller
 
         $transaction->orderLogs()->create([
             'transaction_id' => $transaction->id,
-            'status_id' => $transaction->status_id
+            'status_id' => $transaction->status_id,
+            'notes' => $transaction->status->description,
         ]);
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
@@ -297,7 +299,8 @@ class TransactionController extends Controller
 
             $transaction->orderLogs()->create([
                 'transaction_id' => $transaction->id,
-                'status_id' => $transaction->status_id
+                'status_id' => $transaction->status_id,
+                'notes' => $transaction->status->description,
             ]);
             return response()->json(['message' => 'Transaction expired'], 200);
         } catch (\Exception $e) {
@@ -352,9 +355,10 @@ class TransactionController extends Controller
 
             $transaction->orderLogs()->create([
                 'transaction_id' => $transaction->id,
-                'status_id' => $transaction->status_id
+                'status_id' => $transaction->status_id,
+                'notes' => $transaction->status->description,
             ]);
-            
+
             return response()->json(['message' => 'Order Cancelled successfully'], 200);
         } catch (\Exception $e) {
             return response()->json([
