@@ -65,6 +65,7 @@ Route::controller(TransactionController::class)->group(function () {
     Route::post('/order/cancel/{id}', 'cancel')->middleware('auth:api');
     Route::post('/order/not_collected/{id}', 'not_collected')->middleware('auth:api');
     Route::post('/order/completed/{id}', 'completed')->middleware('auth:api');
+    Route::post('/order/arrived/{id}', 'arrived');
 });
 
 Route::controller(StationController::class)->group(function () {

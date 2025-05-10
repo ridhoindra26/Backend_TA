@@ -398,9 +398,37 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Completed Order the specified order.
+     */
+    public function arrived(string $id)
+    {
+        try {
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->status_id !== 6) {
+                return response()->json(['message' => 'You can\'t change the order as it is '.$transaction->status_id], 400);
+            }
+
+            $transaction->update(['status_id' => 7]);
+
+            $transaction->orderLogs()->create([
+                'transaction_id' => $transaction->id,
+                'status_id' => $transaction->status_id,
+                'notes' => $transaction->status->description,
+            ]);
+
+            return response()->json(['message' => 'Order Arrived successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     
     /**
-     * Cancel the specified order.
+     * Arrived Order the specified order.
      */
     public function cancel(string $id)
     {
