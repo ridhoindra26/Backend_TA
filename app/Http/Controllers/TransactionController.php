@@ -335,6 +335,69 @@ class TransactionController extends Controller
         }
     }
 
+    /**
+     * Not_Collected Order the specified order.
+     */
+    public function not_collected(string $id)
+    {
+        try {
+            $authId = auth()->id();
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->customer_id !== $authId) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            if ($transaction->status_id !== 7) {
+                return response()->json(['message' => 'You can\'t change the order as it is '.$transaction->status_id], 400);
+            }
+
+            $transaction->update(['status_id' => 8]);
+
+            $transaction->orderLogs()->create([
+                'transaction_id' => $transaction->id,
+                'status_id' => $transaction->status_id,
+                'notes' => $transaction->status->description,
+            ]);
+
+            return response()->json(['message' => 'Order Not Collected successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Completed Order the specified order.
+     */
+    public function completed(string $id)
+    {
+        try {
+            $authId = auth()->id();
+            $transaction = Transaction::findOrFail($id);
+            if ($transaction->customer_id !== $authId) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            if ($transaction->status_id !== 7) {
+                return response()->json(['message' => 'You can\'t change the order as it is '.$transaction->status_id], 400);
+            }
+
+            $transaction->update(['status_id' => 9]);
+
+            $transaction->orderLogs()->create([
+                'transaction_id' => $transaction->id,
+                'status_id' => $transaction->status_id,
+                'notes' => $transaction->status->description,
+            ]);
+
+            return response()->json(['message' => 'Order Completed successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     
     /**
      * Cancel the specified order.
