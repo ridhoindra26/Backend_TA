@@ -223,11 +223,27 @@ class CustomerController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Check availability of customer signup.
      */
-    public function create()
+    public function checkSignup(Request $request)
     {
-        //
+        try {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+
+            $customer = Customer::where('email', $request->email)->first();
+
+            return response()->json([
+                'message' => 'Availability checked successfully',
+                'available' => !$customer
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

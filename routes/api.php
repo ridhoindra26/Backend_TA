@@ -28,6 +28,7 @@ Route::controller(CustomerController::class)->group(function () {
     Route::get('/customer', 'index');
     Route::get('/customer/{id}', 'show');
     Route::post('/customer', 'store');
+    Route::post('/customer/check', 'checkSignup');
     Route::post('/login', 'login');
     Route::post('/customer/{id}', 'update');
     Route::delete('/customer/{id}', 'destroy');
