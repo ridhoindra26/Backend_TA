@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Disbursements;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use Illuminate\Support\Facades\Http;
@@ -457,5 +458,37 @@ class TransactionController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function disbursementwebhook(Request $request)
+    {
+        // Log the incoming request for debugging purposes
+        Log::info('Disbursement Webhook Received:', $request->all());
+
+        $expectedToken = env('XENDIT_WEBHOOK_TOKEN_DISBURSEMENT');
+        $receivedToken = $request->header('X-CALLBACK-TOKEN');
+
+        if ($expectedToken && $receivedToken !== $expectedToken) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        // Validate the incoming request payload
+        $data = $request->all();
+        if (!isset($data['external_id']) || !isset($data['status'])) {
+            return response()->json(['message' => 'Invalid payload'], 400);
+        }
+
+        // Find the transaction using the disbursement ID
+        $disbursement = Disbursements::where('external_id', $data['external_id'])->first();
+        if (!$disbursement) {
+            Log::error('Transaction not found for disbursement id: ' . $data['external_id']);
+            return response()->json(['message' => 'Transaction not found'], 404);
+        }
+
+        // Update transaction status based on disbursement status
+        $newStatusId = $data['status'] === 'COMPLETED' ? 1 : 2;
+        $disbursement->update(['status_id' => $newStatusId]);
+
+        return response()->json(['message' => 'Disbursement webhook processed successfully'], 200);
     }
 }
