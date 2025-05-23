@@ -26,6 +26,8 @@ class CustomerController extends Controller
                 $user = Auth::user();
                 $token = $user->createToken('authToken')->plainTextToken;
 
+                $user->photo = env('APP_URL') . '/customers/' . $user->photo;
+
                 return response()->json([
                     'message' => 'Login successful',
                     'token' => $token,
