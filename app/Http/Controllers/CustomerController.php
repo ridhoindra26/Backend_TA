@@ -259,7 +259,7 @@ class CustomerController extends Controller
             if ($request->hasFile('photo')) {
                 $file = $request->file('photo');
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                // $filePath = $file->storeAs('customers', $fileName, 'public');
+                $filePath = $file->storeAs('customers', $fileName, 'public');
             
                 $validatedData['photo'] = $fileName;
             }         
