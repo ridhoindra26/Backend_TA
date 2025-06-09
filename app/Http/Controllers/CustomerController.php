@@ -253,25 +253,44 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-
-        // dd($request->all());
         $validatedData = $request->validated();
 
         try {
+            // === Foto dari file upload ===
             if ($request->hasFile('photo')) {
                 $file = $request->file('photo');
                 $fileName = time() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('customers', $fileName, 'public');
-            
+
                 $validatedData['photo'] = $fileName;
-            }         
+            }
+
+            // === Foto dari base64 ===
+            elseif ($request->filled('photo') && str_starts_with($request->photo, 'data:image')) {
+                $base64 = $request->input('photo');
+                $parts = explode(',', $base64);
+
+                if (count($parts) === 2) {
+                    $imageData = base64_decode($parts[1]);
+                    $extension = 'png'; // default
+                    if (str_contains($parts[0], 'jpeg')) $extension = 'jpg';
+                    elseif (str_contains($parts[0], 'gif')) $extension = 'gif';
+
+                    $fileName = time() . '_photo.' . $extension;
+                    $path = storage_path('app/public/customers/' . $fileName);
+                    file_put_contents($path, $imageData);
+
+                    $validatedData['photo'] = $fileName;
+                }
+            }
 
             $customer = Customer::create($validatedData);
-            
+
             return response()->json([
                 'message' => 'Customer signed up successfully',
                 'customer' => $customer
             ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Something went wrong',
@@ -279,6 +298,35 @@ class CustomerController extends Controller
             ], 500);
         }
     }
+
+    // public function store(StoreCustomerRequest $request)
+    // {
+
+    //     // dd($request->all());
+    //     $validatedData = $request->validated();
+
+    //     try {
+    //         if ($request->hasFile('photo')) {
+    //             $file = $request->file('photo');
+    //             $fileName = time() . '_' . $file->getClientOriginalName();
+    //             $filePath = $file->storeAs('customers', $fileName, 'public');
+            
+    //             $validatedData['photo'] = $fileName;
+    //         }         
+
+    //         $customer = Customer::create($validatedData);
+            
+    //         return response()->json([
+    //             'message' => 'Customer signed up successfully',
+    //             'customer' => $customer
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Something went wrong',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     /**
      * Display the specified resource.
