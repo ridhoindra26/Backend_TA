@@ -28,7 +28,14 @@ class StoreCustomerRequest extends FormRequest
             'email' => 'required|email|unique:customers',
             'password' => 'required|string|min:8',
             'phone' => 'required|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'photo' => [
+                        'nullable',
+                        function ($attribute, $value, $fail) {
+                            if (!preg_match('/^data:image\/(png|jpg|jpeg|gif);base64,/', $value)) {
+                                $fail('The ' . $attribute . ' must be a valid base64 encoded image.');
+                            }
+                        }
+                    ],
         ];
     }
 
