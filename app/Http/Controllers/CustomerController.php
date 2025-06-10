@@ -277,8 +277,8 @@ class CustomerController extends Controller
                     elseif (str_contains($parts[0], 'gif')) $extension = 'gif';
 
                     $fileName = time() . '_photo.' . $extension;
-                    $path = storage_path('app/public/customers/' . $fileName);
-                    file_put_contents($path, $imageData);
+                    // $path = storage_path('app/public/customers/' . $fileName);
+                    // file_put_contents($path, $imageData);
 
                     $validatedData['photo'] = $fileName;
                 }
