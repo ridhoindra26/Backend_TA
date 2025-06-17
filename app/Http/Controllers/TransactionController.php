@@ -128,7 +128,7 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
-        $reference_id = 'order-id-' . time();
+        $reference_id = 'order-' . auth()->id() . '-' . uniqid();
         $expires_at = now()->addHour()->toISOString();
         $callback_url = config('services.xendit.webhook_url', 'https://mobiledrone.l-prepaid.com/api/order/webhook');
         $key = env('XENDIT_SECRET_KEY');
